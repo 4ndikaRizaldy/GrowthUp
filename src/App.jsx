@@ -234,7 +234,14 @@ function App() {
   const [currentDay, setCurrentDay] = useState(1);
   const [completedDays, setCompletedDays] = useState(() => {
     const saved = localStorage.getItem("growthup_done");
-    return saved ? JSON.parse(saved) : [];
+    const completed = saved ? JSON.parse(saved) : [];
+    if (!Array.isArray(completed)) {
+      console.error(
+        "Data 'growthup_done' tidak valid, menginisialisasi ulang."
+      );
+      localStorage.setItem("growthup_done", JSON.stringify([]));
+    }
+    return saved ? completed : [];
   });
 
   const [darkMode, setDarkMode] = useState(() => {
@@ -275,22 +282,26 @@ function App() {
       }
     };
 
-    const showReminder = () => {
-      const lastReminder = localStorage.getItem("reminder_shown_at");
-      const last = lastReminder ? new Date(lastReminder) : null;
-      const isSameDay = last && now.toDateString() === last.toDateString();
+     const showReminder = () => {
+       if (!Array.isArray(completedDays)) {
+         console.error("completedDays bukan array:", completedDays);
+         return;
+       }
+       const lastReminder = localStorage.getItem("reminder_shown_at");
+       const last = lastReminder ? new Date(lastReminder) : null;
+       const isSameDay = last && now.toDateString() === last.toDateString();
 
-      const isEvening = hour >= 18;
-      const doneToday = completedDays.includes(currentDay);
+       const isEvening = hour >= 18;
+       const doneToday = completedDays.includes(currentDay);
 
-      if (isEvening && !doneToday && !isSameDay) {
-        new Notification("Yuk selesaikan tantanganmu hari ini! ✨", {
-          body: "Klik untuk kembali ke GrowthUp dan tandai tantangan hari ini ✅",
-          icon: "/icon-512.png",
-        });
-        localStorage.setItem("reminder_shown_at", now.toISOString());
-      }
-    };
+       if (isEvening && !doneToday && !isSameDay) {
+         new Notification("Yuk selesaikan tantanganmu hari ini! ✨", {
+           body: "Klik untuk kembali ke GrowthUp dan tandai tantangan hari ini ✅",
+           icon: "/icon-512.png",
+         });
+         localStorage.setItem("reminder_shown_at", now.toISOString());
+       }
+     };
 
     if (Notification.permission !== "granted") {
       Notification.requestPermission();
@@ -316,6 +327,11 @@ function App() {
   const dayData = days.find((d) => d.day === currentDay);
 
   const toggleDone = () => {
+    if (!Array.isArray(completedDays)) {
+      console.error("completedDays bukan array:", completedDays);
+      return;
+    }
+
     const alreadyDone = completedDays.includes(currentDay);
     const updated = alreadyDone
       ? completedDays.filter((d) => d !== currentDay)
@@ -328,7 +344,6 @@ function App() {
       setTimeout(() => setCurrentDay((prev) => prev + 1), 500);
     }
   };
-
 
 
   const resetProgress = () => {
