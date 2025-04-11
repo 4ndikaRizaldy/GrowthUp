@@ -244,6 +244,18 @@ function App() {
     return saved ? completed : [];
   });
 
+  const [notes, setNotes] = useState(() => {
+    const saved = localStorage.getItem("growthup-notes");
+    return saved ? JSON.parse(saved) : {};
+  });
+
+  const saveNote = (day, text) => {
+    const updatedNotes = { ...notes, [day]: text };
+    setNotes(updatedNotes);
+    localStorage.setItem("growthup-notes", JSON.stringify(updatedNotes));
+  };
+
+
   const [darkMode, setDarkMode] = useState(() => {
     return localStorage.getItem("growthup_dark") === "true";
   });
@@ -415,6 +427,20 @@ function App() {
             />
           )
         )}
+
+        <div className="w-full flex justify-center">
+          <div className="w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl">
+            <h3 className="text-lg font-semibold mt-6 text-center">
+              Catatan Hari Ini
+            </h3>
+            <textarea
+              value={notes[currentDay] || ""}
+              onChange={(e) => saveNote(currentDay, e.target.value)}
+              placeholder="Tulis catatan pribadi kamu di sini..."
+              className="w-full p-3 border rounded-xl mt-2 h-32 bg-white text-black dark:bg-gray-800 dark:text-white dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500"
+            />
+          </div>
+        </div>
 
         {!viewSummary && (
           <div className="mt-6 space-x-2">
